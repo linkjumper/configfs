@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# todo
+# - generic UDC param
+# - remove sleep 1 in function ffs_app() 
+# - handle error if udc_start udc_stop fails
+
 G1=/sys/kernel/config/usb_gadget/g1
 UDC=ci_hdrc.0 # see /sys/class/udc/* for UDC name
 FFS_DIR=~/ffs
@@ -43,7 +48,7 @@ function ffs_app() {
               fi ;;
         *) echo "ffs_app(): unknown pattern" ;;
     esac
-    sleep 0.1
+    sleep 1
 }
 
 function init_usb_gadget() {
