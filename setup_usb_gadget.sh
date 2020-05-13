@@ -34,7 +34,10 @@ function ffs_app() {
     # It is very likely that the start and stop cases will need to be adjusted
     case "$1" in
         start) $APP $FFS_DIR & ;;
-        stop) killall -s SIGTERM $(basename $APP) ;;
+        stop) pid=$(pidof $(basename $APP))
+              if [[ $pid ]]; then
+                  kill -s SIGTERM $pid
+              fi ;;
         *) echo "ffs_app(): unknown pattern" ;;
     esac
     sleep 0.1
