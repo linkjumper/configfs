@@ -3,7 +3,7 @@
 # todo
 # - generic UDC param
 # - remove sleep 1 in function ffs_app() 
-# - handle error if udc_start udc_stop fails
+# - handle error if udc stop fails
 
 G1=/sys/kernel/config/usb_gadget/g1
 UDC=ci_hdrc.0 # see /sys/class/udc/* for UDC name
@@ -85,13 +85,15 @@ function init_usb_gadget() {
         ln -s functions/SourceSink.usb0 configs/c.1/
     fi
 
-    # start usb gadget
+    # Start the UDC
     echo $UDC > $G1/UDC
 }
 
 function deinit_usb_gadget() {
-    # stop usb gadget
-    echo "" > $G1/UDC
+    # Only stop the UDC if it is still active
+    if [[ -n $(cat $G1/UDC) ]]; then
+        echo "" > $G1/UDC
+    fi
 
     # clean up
     cd $G1
