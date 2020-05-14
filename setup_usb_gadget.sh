@@ -6,6 +6,9 @@ FFS_DIR=~/ffs
 APP=~/aio_simple
 idVendor=0xfffe
 idProduct=0xa4a4
+manufacturer="Foo, Inc."
+product="Bar Gadget"
+serialnumber=12345
 
 function usage() {
     echo "Usage: $0 [-l|-s|-f]"
@@ -49,6 +52,9 @@ function init_usb_gadget() {
     echo $idVendor > idVendor
     echo $idProduct > idProduct
     mkdir strings/0x409
+    echo $manufacturer > strings/0x409/manufacturer
+    echo $product > strings/0x409/product
+    echo $serialnumber > strings/0x409/serialnumber
     mkdir configs/c.1
     mkdir configs/c.1/strings/0x409
     echo 2 > configs/c.1/MaxPower
