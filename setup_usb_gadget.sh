@@ -16,24 +16,39 @@ product="Bar Gadget"
 serialnumber=12345
 
 function usage() {
-    echo "Usage: $0 [-l|-s|-f]"
+    echo "Usage: $0 [-l|-s|-f|-m <blk_dev_filename>]"
     echo "  Enable one or more usb gadget functions:"
     echo "  -l Loopback"
     echo "  -s SourceSink"
     echo "  -f FFS"
+    echo "  -m <Block Device> Mass Storage"
 }
 
 function parse_args() {
     [[ $# == 0 ]] && usage && exit
-    for arg in "$@"
-    do
-        case "$arg" in
-            "-l") lb=1 ;;
-            "-s") ss=1 ;;
-            "-f") ffs=1 ;;
-            *) usage;
-               exit ;;
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -l) lb=1 ;;
+            -s) ss=1 ;;
+            -f) ffs=1 ;;
+            -m)
+                ms=1
+                shift
+                if [[ -z "$1" || "$1" == -* ]]; then
+                    echo "Error: -m requires a filename"
+                    usage
+                    exit 1
+                else
+                    blk_device="$1" # e.g. /dev/mmcblk0p2
+                fi
+                ;;
+            *)
+                usage
+                exit 1
+                ;;
         esac
+        shift
     done
 }
 
@@ -85,6 +100,12 @@ function init_usb_gadget() {
         ln -s functions/SourceSink.usb0 configs/c.1/
     fi
 
+    if [[ $ms ]]; then
+        mkdir functions/mass_storage.usb0
+        ln -s functions/mass_storage.usb0 configs/c.1/
+        echo $blk_device > functions/mass_storage.usb0/lun.0/file
+    fi
+
     # Start the UDC
     echo $UDC > $G1/UDC
 }
@@ -118,7 +139,12 @@ function deinit_usb_gadget() {
         rm configs/c.1/SourceSink.usb0
         rmdir functions/SourceSink.usb0
     fi
-    
+
+    if [[ -d "configs/c.1/mass_storage.usb0" ]]; then
+        rm configs/c.1/mass_storage.usb0
+        rmdir functions/mass_storage.usb0
+    fi
+
     rmdir configs/c.1/strings/0x409
     rmdir configs/c.1
     rmdir strings/0x409
